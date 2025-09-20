@@ -5,6 +5,7 @@ import jwt
 import requests
 def main():
   # Retrieve GitHub App credentials from environment variables 
+  print("Generating GitHub App Token...")
   APP_ID = os.environ.get("GH_APPLICATION_ID") 
   INSTALLATION_ID = os.environ.get("GH_APPLICATION_INSTALLATION_ID") 
   PRIVATE_KEY = os.environ.get("GH_APP_PRIVATE_KEY") 

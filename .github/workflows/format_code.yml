@@ -85,7 +85,7 @@ jobs:
 
       - name: Commit modified files
         run: |
-          git add --all
+          git add --all --:!tooling/
           git commit -m "Terraform Code Format"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
