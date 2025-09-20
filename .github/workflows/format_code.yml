@@ -50,6 +50,7 @@ jobs:
         uses: terraform-linters/setup-tflint@v5
         with:
           tflint_version: v0.52.0
+          tflint_wrapper: true
 
       - name: Terraform Format Recursive
         run: | 
@@ -64,17 +65,24 @@ jobs:
       - name: Run TFLint
         id: tflint
         run: |
-          tflint -f compact --recursive >> $GITHUB_OUTPUT
-        continue-on-error: true
+          tflint -f compact --recursive
 
       - name: Post TFLint Results
         run: |
           {
             echo "### TFLint Result"
+            echo "Stdout"
             echo 
             echo \`\`\`
-            echo "${{ steps.tflint.outputs }}"
+            echo "${{ steps.tflint.outputs.stdout }}"
             echo \`\`\`
+            echo
+            echo "Stderr"
+            echo 
+            echo \`\`\`
+            echo "${{ steps.tflint.outputs.stderr }}"
+            echo \`\`\`
+            echo
             echo "</br>"
           } >> $GITHUB_STEP_SUMMARY
     
