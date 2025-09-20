@@ -57,13 +57,11 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init 2>&1
+            terraform init
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status     
 
       - name: Terraform Validate
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -73,13 +71,11 @@ jobs:
             echo "<details><summary>Terraform Validate</summary>"
             echo
             echo \`\`\`
-            terraform validate 2>&1
+            terraform validate
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status        
            
   plan-destroy:
     name: Terraform Plan or Destroy
@@ -108,13 +104,11 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init 2>&1
+            terraform init
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status
 
       - name: Terraform Plan
         if: inputs.terraform-plan == true
@@ -125,13 +119,11 @@ jobs:
             echo "<details><summary>Terraform Plan</summary>"
             echo
             echo \`\`\`
-            terraform plan -out tfplan 2>&1
+            terraform plan -out tfplan
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status
 
       - name: Terraform Destroy
         if: inputs.terraform-destroy == true
@@ -142,13 +134,11 @@ jobs:
             echo "<details><summary>Terraform Destroy</summary>"
             echo
             echo \`\`\`
-            terraform destroy -out tfplan 2>&1
+            terraform destroy -out tfplan
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status     
 
       - name: Upload tfplan artifact
         uses: actions/upload-artifact@v3
@@ -185,13 +175,11 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init 2>&1
+            terraform init
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status     
 
       - name: Download tfplan artifact
         uses: actions/download-artifact@v3
@@ -207,10 +195,8 @@ jobs:
             echo "<details><summary>Terraform Apply</summary>"
             echo
             echo \`\`\`
-            terraform apply tfplan 2>&1
+            terraform apply tfplan
             echo \`\`\`
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-          status=${PIPESTATUS[0]}
-          exit $status     
