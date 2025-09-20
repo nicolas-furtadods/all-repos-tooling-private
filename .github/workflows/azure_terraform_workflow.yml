@@ -1,0 +1,182 @@
+name: "Terraform Validate, Plan, Apply and destroy"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment to target
+        type: string
+        required: true
+      terraform-version:
+        description: Terraform version to install
+        type: string
+        default : "1.5.2"
+      terraform-plan:
+        description: Run terraform plan
+        type: boolean
+        default: false
+      terraform-apply:
+        description: Run terraform apply 
+        type: boolean
+        default: false
+      terraform-destroy:
+        description: Run terraform destroy
+        type: boolean
+        default: false
+      terraform-working-directory:
+        description: Terraform working directory
+        type: string
+        default: "."
+    secrets:
+      AZURE_CREDENTIALS:
+        description: Azure Service Principal credentials as in accepted by azure/login action
+        required: true
+jobs:
+  validate:
+    name: Terraform Validate
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: "Checkout Source Code"
+        uses: actions/checkout@v5
+
+      - name: "Install Terraform"
+        uses:  hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Terraform Init
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Init"
+            echo "<details><summary>Terraform Init</summary>"
+            echo \`\`\`
+            terraform init
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Validate
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Validate"
+            echo "<details><summary>Terraform Validate</summary>"
+            echo \`\`\`
+            terraform validate
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
+           
+  plan-destroy:
+    name: Terraform Plan or Destroy
+    if: inputs.terraform-plan == true || inputs.terraform-destroy == true
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: "Checkout Source Code"
+        uses: actions/checkout@v5
+
+      - name: "Install Terraform"
+        uses:  hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Authenticate to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Init"
+            echo "<details><summary>Terraform Init</summary>"
+            echo \`\`\`
+            terraform init
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Plan
+        if: inputs.terraform-plan == true
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Plan"
+            echo "<details><summary>Terraform Plan</summary>"
+            echo \`\`\`
+            terraform plan -out tfplan
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Destroy
+        if: inputs.terraform-destroy == true
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Destroy"
+            echo "<details><summary>Terraform Destroy</summary>"
+            echo \`\`\`
+            terraform destroy -out tfplan
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload tfplan artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: tfplan
+          path : ${{ inputs.terraform-working-directory }}/tfplan
+          retention-days: 1
+          if-no-files-found: error
+
+  apply:
+    name: Terraform Apply
+    if: inputs.terraform-apply == true && (inputs.terraform-plan == true || inputs.terraform-destroy == true)
+    runs-on: [ubuntu-latest]
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: "Checkout Source Code"
+        uses: actions/checkout@v5
+
+      - name: "Install Terraform"
+        uses:  hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Authenticate to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Init"
+            echo "<details><summary>Terraform Init</summary>"
+            echo \`\`\`
+            terraform init
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Download tfplan artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: tfplan
+          path: ${{ inputs.terraform-working-directory }}/tfplan
+
+      - name: Terraform Apply
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          {
+            echo "### Terraform Apply"
+            echo "<details><summary>Terraform Apply</summary>"
+            echo \`\`\`
+            terraform apply tfplan
+            echo \`\`\`
+            echo "</details>"
+          } >> $GITHUB_STEP_SUMMARY
