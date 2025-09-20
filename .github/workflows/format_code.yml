@@ -54,6 +54,7 @@ jobs:
           tflint_result="$(tflint -f compact)" >> $GITHUB_OUTPUT
 
       - name: Post TFLint Results
+        if: steps.tflint.outputs.tflint_result != ''
         run: |
           {
             echo "### TFLint Result"
@@ -63,5 +64,16 @@ jobs:
             echo \`\`\`
             echo "</br>"
           } >> $GITHUB_STEP_SUMMARY
+      
+      - name: Commit modified files
+        run: |
+          git add --all
+          git commit -m "Terraform Code Format"
+        continue-on-error: true # Necessary if case the code is good and nothing has changed
+      
+      - name: Push code
+        if: inputs.push-code
+        run: |
+          git push
         
             
