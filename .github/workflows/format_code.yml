@@ -71,19 +71,13 @@ jobs:
         run: |
           {
             echo "### TFLint Result"
-            echo "Stdout"
+            echo "<details><summary>Lint Results</summary>"
             echo 
             echo \`\`\`
             echo "${{ steps.tflint.outputs.stdout }}"
             echo \`\`\`
+            echo "</details>"
             echo
-            echo "Stderr"
-            echo 
-            echo \`\`\`
-            echo "${{ steps.tflint.outputs.stderr }}"
-            echo \`\`\`
-            echo
-            echo "</br>"
           } >> $GITHUB_STEP_SUMMARY
     
       - name: Set git user
