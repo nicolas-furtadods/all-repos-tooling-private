@@ -49,7 +49,19 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Run TFLint
+        id: tflint
         run: |
-          tflint -f compact
+          tflint_result="$(tflint -f compact)" >> $GITHUB_OUTPUT
+
+      - name: Post TFLint Results
+        run: |
+          {
+            echo "### TFLint Result"
+            echo 
+            echo \`\`\`
+            echo "${{ steps.tflint.outputs.tflint_result }}"
+            echo \`\`\`
+            echo "</br>"
+          } ==> $GITHUB_STEP_SUMMARY
         
             
