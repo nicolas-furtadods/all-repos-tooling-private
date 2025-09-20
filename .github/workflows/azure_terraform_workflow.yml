@@ -1,5 +1,9 @@
 name: "Terraform Validate, Plan, Apply and destroy"
-
+env:
+  TF_CLI_ARGS: "-no-color"
+  TF_CLI_ARGS_plan: "-input=false"
+  TF_CLI_ARGS_destroy: "-input=false"
+  TF_CLI_ARGS_apply: "-input=false"
 on:
   workflow_call:
     inputs:
@@ -35,6 +39,7 @@ jobs:
   validate:
     name: Terraform Validate
     runs-on: [ubuntu-latest]
+    environment: ${{ inputs.environment }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -72,6 +77,7 @@ jobs:
     name: Terraform Plan or Destroy
     if: inputs.terraform-plan == true || inputs.terraform-destroy == true
     runs-on: [ubuntu-latest]
+    environment: ${{ inputs.environment }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
