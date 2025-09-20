@@ -1,0 +1,55 @@
+name: "Code Format Workflow"
+
+on:
+  workflow_call:
+    inputs:
+      push-code:
+        description: Commit the files after changes has been made.
+        type: boolean
+        default: true
+      terraform-version:
+        description: Terraform version to install
+        type: string
+        default : "1.5.2"
+      python-version:
+        description: Python version to install
+        type: string
+        default: "3.9.17"
+
+jobs:
+  format:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: "Checkout Source Code"
+        uses: actions/checkout@v5
+
+      - name: "Install Terraform"
+        uses:  hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+            
+      - name: "Install Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+            
+      - name: "Install Terraform Linter"
+        uses: terraform-linters/setup-tflint@v5
+        with:
+          tflint_version: v0.52.0
+
+      - name: Terraform Format Recursive
+        run: | 
+          terraform fmt -recursive .
+
+      - name: Terraform Lint Init
+        run: |
+          tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run TFLint
+        run: |
+          tflint -f compact
+        
+            
