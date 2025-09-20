@@ -94,7 +94,7 @@ jobs:
       - name: Generate GitHub App Token
         id: generate_token     
         env:
-          GH_APPLICATION_ID: "test"
+          GH_APPLICATION_ID: ${{ secrets.GH_APPLICATION_ID }}
           GH_APPLICATION_INSTALLATION_ID: ${{ secrets.GH_APPLICATION_INSTALLATION_ID }}
           GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
         run: python ./tooling/scripts/generate_token.py
