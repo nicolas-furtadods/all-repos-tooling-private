@@ -64,7 +64,7 @@ jobs:
       - name: Run TFLint
         id: tflint
         run: |
-          tflint_result="$(tflint -f compact)" >> $GITHUB_OUTPUT
+          tflint_result="$(tflint -f compact --recursive)" >> $GITHUB_OUTPUT
 
       - name: Post TFLint Results
         if: steps.tflint.outputs.tflint_result != ''
