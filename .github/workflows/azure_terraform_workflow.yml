@@ -69,10 +69,12 @@ jobs:
           {
             echo "### Terraform Validate"
             echo "<details><summary>Terraform Validate</summary>"
+            echo
             echo \`\`\`
             terraform validate
             echo \`\`\`
             echo "</details>"
+            echo
           } >> $GITHUB_STEP_SUMMARY
            
   plan-destroy:
@@ -100,10 +102,12 @@ jobs:
           {
             echo "### Terraform Init"
             echo "<details><summary>Terraform Init</summary>"
+            echo
             echo \`\`\`
             terraform init
             echo \`\`\`
             echo "</details>"
+            echo
           } >> $GITHUB_STEP_SUMMARY
 
       - name: Terraform Plan
@@ -113,10 +117,12 @@ jobs:
           {
             echo "### Terraform Plan"
             echo "<details><summary>Terraform Plan</summary>"
+            echo
             echo \`\`\`
             terraform plan -out tfplan
             echo \`\`\`
             echo "</details>"
+            echo
           } >> $GITHUB_STEP_SUMMARY
 
       - name: Terraform Destroy
@@ -126,10 +132,12 @@ jobs:
           {
             echo "### Terraform Destroy"
             echo "<details><summary>Terraform Destroy</summary>"
+            echo
             echo \`\`\`
             terraform destroy -out tfplan
             echo \`\`\`
             echo "</details>"
+            echo
           } >> $GITHUB_STEP_SUMMARY
 
       - name: Upload tfplan artifact
@@ -165,10 +173,12 @@ jobs:
           {
             echo "### Terraform Init"
             echo "<details><summary>Terraform Init</summary>"
+            echo
             echo \`\`\`
             terraform init
             echo \`\`\`
             echo "</details>"
+            echo
           } >> $GITHUB_STEP_SUMMARY
 
       - name: Download tfplan artifact
@@ -183,8 +193,10 @@ jobs:
           {
             echo "### Terraform Apply"
             echo "<details><summary>Terraform Apply</summary>"
+            echo
             echo \`\`\`
             terraform apply tfplan
             echo \`\`\`
             echo "</details>"
+            echo
           } >> $GITHUB_STEP_SUMMARY
