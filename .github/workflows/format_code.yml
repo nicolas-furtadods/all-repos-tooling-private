@@ -79,6 +79,33 @@ jobs:
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
+
+      - name: Format TFLint Result
+        id: format_tflint_result
+        run: |
+          {
+            echo "### TFLint Result"
+            echo "<details><summary>Lint Results</summary>"
+            echo 
+            echo \`\`\`
+            echo "${{ steps.tflint.outputs.stdout }}"
+            echo \`\`\`
+            echo "</details>"
+            echo
+          } >> $GITHUB_OUTPUT
+      - name: post results
+        uses: actions/github-script@v7
+        env:
+          body_content: ${{ steps.format_tflint_result.outputs.content }}
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body_content
+            })
+        
     
       - name: Set git user
         run: |
