@@ -64,16 +64,16 @@ jobs:
       - name: Run TFLint
         id: tflint
         run: |
-          tflint_result="$(tflint -f compact --recursive 2>&1)" >> $GITHUB_OUTPUT
+          tflint -f compact --recursive
 
       - name: Post TFLint Results
-        if: steps.tflint.outputs.tflint_result != ''
+        if: steps.tflint.outputs.stdout != ''
         run: |
           {
             echo "### TFLint Result"
             echo 
             echo \`\`\`
-            echo "${{ steps.tflint.outputs.tflint_result }}"
+            echo "${{ steps.tflint.outputs.stdout }}"
             echo \`\`\`
             echo "</br>"
           } >> $GITHUB_STEP_SUMMARY
