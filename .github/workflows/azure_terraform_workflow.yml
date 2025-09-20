@@ -54,13 +54,11 @@ jobs:
         run: |
           {
             echo "### Terraform Init"
-            echo "<details><summary>Terraform Init</summary>"
-            echo
+            echo "<details><summary>Terraform Init</summary></br>"
             echo \`\`\`
             terraform init
             echo \`\`\`
             echo "</details>"
-            echo
           } >> $GITHUB_STEP_SUMMARY
 
       - name: Terraform Validate
