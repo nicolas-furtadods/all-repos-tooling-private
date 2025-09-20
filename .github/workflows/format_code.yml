@@ -69,10 +69,14 @@ jobs:
         run: |
           git add --all
           git commit -m "Terraform Code Format"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true # Necessary if case the code is good and nothing has changed
       
       - name: Push code
         if: inputs.push-code
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git push
         
