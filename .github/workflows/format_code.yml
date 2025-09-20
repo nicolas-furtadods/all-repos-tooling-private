@@ -30,6 +30,7 @@ jobs:
           repository: nicolas-furtadods/all-repos-tooling-private
           token: ${{ secrets.GITHUB_TOKEN }}
           sparse-checkout: scripts/
+          path: scripts/
 
       - name: "Install Terraform"
         uses:  hashicorp/setup-terraform@v3
