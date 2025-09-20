@@ -29,8 +29,7 @@ jobs:
         with:
           repository: nicolas-furtadods/all-repos-tooling-private
           token: ${{ secrets.GITHUB_TOKEN }}
-          sparse-checkout: scripts/
-          path: scripts/
+          path: tooling/
 
       - name: "Install Terraform"
         uses:  hashicorp/setup-terraform@v3
@@ -42,14 +41,10 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
 
-      - run: |
-          ls -la scripts/
-          cat scripts/requirements.txt
-          
       - name: "Install Python Dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install -r ./scripts/requirements.txt
+          pip install -r ./tooling/scripts/requirements.txt
             
       - name: "Install Terraform Linter"
         uses: terraform-linters/setup-tflint@v5
@@ -99,7 +94,7 @@ jobs:
       - name: Generate GitHub App Token
         id: generate_token
         run: |
-          python ./scripts/generate_token.py > token.txt
+          python ./tooling/scripts/generate_token.py > token.txt
           echo "GH_APP_TOKEN=$(cat token.txt)" >> $GITHUB_ENV
         env:
           GH_APPLICATION_ID: ${{ secrets.GH_APPLICATION_ID }}
