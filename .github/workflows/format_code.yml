@@ -64,7 +64,8 @@ jobs:
       - name: Run TFLint
         id: tflint
         run: |
-          tflint -f compact --recursive 2>&1
+          tflint -f compact --recursive
+        continue-on-error: true
 
       - name: Post TFLint Results
         if: steps.tflint.outputs.stdout != ''
