@@ -19,6 +19,7 @@ on:
 jobs:
   format:
     runs-on: [ubuntu-latest]
+    environment: all-automation
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
