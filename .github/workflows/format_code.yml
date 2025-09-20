@@ -42,6 +42,10 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
 
+      - run: |
+          ls -la scripts/
+          cat scripts/requirements.txt
+          
       - name: "Install Python Dependencies"
         run: |
           python -m pip install --upgrade pip
