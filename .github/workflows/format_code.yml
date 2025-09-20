@@ -68,13 +68,12 @@ jobs:
         continue-on-error: true
 
       - name: Post TFLint Results
-        if: steps.tflint.outputs.stderr != ''
         run: |
           {
             echo "### TFLint Result"
             echo 
             echo \`\`\`
-            echo "${{ steps.tflint.outputs.stderr }}"
+            echo "${{ steps.tflint.outputs }}"
             echo \`\`\`
             echo "</br>"
           } >> $GITHUB_STEP_SUMMARY
