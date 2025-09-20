@@ -66,12 +66,13 @@ jobs:
       - name: Terraform Validate
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
+          result=$(terraform validate 2>&1) || exit_code=$?
           {
             echo "### Terraform Validate"
             echo "<details><summary>Terraform Validate</summary>"
             echo
             echo \`\`\`
-            terraform validate
+            echo "$result"
             echo \`\`\`
             echo "</details>"
             echo
