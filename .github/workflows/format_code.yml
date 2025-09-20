@@ -62,6 +62,6 @@ jobs:
             echo "${{ steps.tflint.outputs.tflint_result }}"
             echo \`\`\`
             echo "</br>"
-          } ==> $GITHUB_STEP_SUMMARY
+          } >> $GITHUB_STEP_SUMMARY
         
             
