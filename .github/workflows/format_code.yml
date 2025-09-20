@@ -93,9 +93,7 @@ jobs:
 
       - name: Generate GitHub App Token
         id: generate_token
-        run: |
-          python ./tooling/scripts/generate_token.py > token.txt
-          echo "GH_APP_TOKEN=$(cat token.txt)" >> $GITHUB_ENV
+        run: python ./tooling/scripts/generate_token.py
         env:
           GH_APPLICATION_ID: ${{ secrets.GH_APPLICATION_ID }}
           GH_APPLICATION_INSTALLATION_ID: ${{ secrets.GH_APPLICATION_INSTALLATION_ID }}
@@ -104,7 +102,7 @@ jobs:
       - name: Push code
         if: inputs.push-code
         env:
-          GH_TOKEN: ${{ env.GH_APP_TOKEN }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.github_app_token }}
         run: |
           git push
         
