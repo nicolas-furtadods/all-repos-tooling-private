@@ -71,11 +71,13 @@ jobs:
             echo "<details><summary>Terraform Validate</summary>"
             echo
             echo \`\`\`
-            terraform validate
+            terraform validate 2>&1
             echo \`\`\`
             echo "</details>"
             echo
-          } > $GITHUB_STEP_SUMMARY
+          } >> $GITHUB_STEP_SUMMARY
+          status=${PIPESTATUS[0]}
+          exit $status        
            
   plan-destroy:
     name: Terraform Plan or Destroy
