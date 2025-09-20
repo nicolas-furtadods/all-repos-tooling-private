@@ -18,7 +18,6 @@ on:
 
 jobs:
   format:
-    environment: all-automation
     runs-on: [ubuntu-latest]
     steps:
       - name: "Checkout Source Code"
