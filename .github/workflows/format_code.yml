@@ -70,21 +70,24 @@ jobs:
       - name: Format TFLint Results
         id: format_tflint
         run: |
+          delimiter=$(openssl rand -hex 16)
           {
+            echo "tflint-result<<${delimiter}"
             echo "### TFLint Result"
-            echo "<details><summary>Lint Results</summary>"
             echo 
+            echo "TFLint found the following issues:"
             echo \`\`\`
             echo "${{ steps.tflint.outputs.stdout }}"
             echo \`\`\`
-            echo "</details>"
             echo
+            echo "${delimiter}"
           } >> $GITHUB_OUTPUT
 
       - name: Post TFLint results in PR
         uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
         env:
-          body_content: ${{ steps.format_tflint.outputs.content }}
+          body_content: ${{ steps.format_tflint.outputs.tflint-result }}
         with:
           script: |
             github.rest.issues.createComment({
@@ -95,7 +98,7 @@ jobs:
             })
 
       - name: Post TFLint results in summary
-        run: echo "${{ steps.format_tflint.outputs.content }}" >> $GITHUB_STEP_SUMMARY
+        run: echo "${{ steps.format_tflint.outputs.tflint-result }}" >> $GITHUB_STEP_SUMMARY
     
       - name: Set git user
         if: inputs.push-code
