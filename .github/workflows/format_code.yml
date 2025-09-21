@@ -91,7 +91,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: ${{ steps.tflint.outputs.stdout }}
+              body: 'thanks'
             })
     
       - name: Set git user
