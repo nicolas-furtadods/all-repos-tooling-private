@@ -76,9 +76,7 @@ jobs:
             echo "### TFLint Result"
             echo 
             echo "TFLint found the following issues:"
-            echo \`\`\`
             echo "${{ steps.tflint.outputs.stdout }}"
-            echo \`\`\`
             echo
             echo "${delimiter}"
           } >> $GITHUB_OUTPUT
