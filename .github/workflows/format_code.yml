@@ -83,7 +83,7 @@ jobs:
 
       - name: Post TFLint results in PR
         uses: actions/github-script@v7
-        if: github.event_name == 'pull_request' && if: steps.tflint.outputs.stdout != ''
+        if: github.event_name == 'pull_request' && steps.tflint.outputs.stdout != ''
         env:
           body_content: ${{ steps.format_tflint.outputs.tflint-result }}
         with:
