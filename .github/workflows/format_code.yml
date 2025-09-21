@@ -65,10 +65,10 @@ jobs:
       - name: Run TFLint
         id: tflint
         run: |
-          tflint -f compact --recursive --minimum-failure-severity=error
+          tflint --recursive --minimum-failure-severity=error
 
-      - name: Post TFLint Results
-        id: post_tflint_results
+      - name: Format TFLint Results
+        id: format_tflint
         run: |
           {
             echo "### TFLint Result"
@@ -79,12 +79,12 @@ jobs:
             echo \`\`\`
             echo "</details>"
             echo
-          } >> $GITHUB_STEP_SUMMARY
+          } >> $GITHUB_OUTPUT
 
-      - name: post results
+      - name: Post TFLint results in PR
         uses: actions/github-script@v7
         env:
-          body_content: ${{ steps.post_tflint_results.outputs.content }}
+          body_content: ${{ steps.format_tflint.outputs.content }}
         with:
           script: |
             github.rest.issues.createComment({
@@ -93,13 +93,18 @@ jobs:
               repo: context.repo.repo,
               body: 'thanks'
             })
+
+      - name: Post TFLint results in summary
+        run: echo "${{ steps.format_tflint.outputs.content }}" >> $GITHUB_STEP_SUMMARY
     
       - name: Set git user
+        if: inputs.push-code
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
       - name: Commit modified files
+        if: inputs.push-code
         run: |
           git add --all -- ':!tooling/'
           git commit -m "Terraform Code Format"
@@ -108,6 +113,7 @@ jobs:
         continue-on-error: true # Necessary if case the code is good and nothing has changed
 
       - name: Generate GitHub App Token
+        if: inputs.push-code
         id: generate_token     
         env:
           GH_APPLICATION_ID: ${{ secrets.GH_APPLICATION_ID }}
