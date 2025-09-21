@@ -91,7 +91,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body_content
+              body: ${{ steps.post_tflint_results.outputs.content }}
             })
     
       - name: Set git user
