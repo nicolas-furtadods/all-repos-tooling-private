@@ -46,58 +46,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ./tooling/scripts/requirements.txt
             
-      - name: "Install Terraform Linter"
-        uses: terraform-linters/setup-tflint@v5
-        with:
-          tflint_version: v0.52.0
-          tflint_wrapper: true
-
       - name: Terraform Format Recursive
         run: | 
           terraform fmt -recursive .
-
-      - name: Terraform Lint Init
-        run: |
-          tflint --init
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Run TFLint
-        id: tflint
-        run: |
-          tflint --recursive --minimum-failure-severity=error
-
-      - name: Format TFLint Results
-        id: format_tflint
-        if: steps.tflint.outputs.stdout != ''
-        run: |
-          delimiter=$(openssl rand -hex 16)
-          {
-            echo "tflint-result<<${delimiter}"
-            echo "### TFLint Result"
-            echo 
-            echo "${{ steps.tflint.outputs.stdout }}"
-            echo
-            echo "${delimiter}"
-          } >> $GITHUB_OUTPUT
-
-      - name: Post TFLint results in PR
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request' && steps.tflint.outputs.stdout != ''
-        env:
-          body_content: ${{ steps.format_tflint.outputs.tflint-result }}
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: process.env.body_content
-            })
-
-      - name: Post TFLint results in summary
-        if: steps.tflint.outputs.stdout != ''
-        run: echo "${{ steps.format_tflint.outputs.tflint-result }}" >> $GITHUB_STEP_SUMMARY
     
       - name: Set git user
         if: inputs.push-code
@@ -114,14 +65,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true # Necessary if case the code is good and nothing has changed
 
-      - name: Generate GitHub App Token
-        if: inputs.push-code
-        id: generate_token     
-        env:
-          GH_APPLICATION_ID: ${{ secrets.GH_APPLICATION_ID }}
-          GH_APPLICATION_INSTALLATION_ID: ${{ secrets.GH_APPLICATION_INSTALLATION_ID }}
-          GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
-        run: python ./tooling/scripts/generate_token.py
+      #- name: Generate GitHub App Token
+      #  if: inputs.push-code
+      #  id: generate_token     
+      #  env:
+      #    GH_APPLICATION_ID: ${{ secrets.GH_APPLICATION_ID }}
+      #    GH_APPLICATION_INSTALLATION_ID: ${{ secrets.GH_APPLICATION_INSTALLATION_ID }}
+      #    GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      #  run: python ./tooling/scripts/generate_token.py
       
       - name: Push code
         if: inputs.push-code

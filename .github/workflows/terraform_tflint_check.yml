@@ -1,0 +1,86 @@
+name: Terraform Validate
+
+on:
+  workflow_call:
+    inputs:
+      terraform-version:
+        description: Terraform version to install
+        type: string
+        default : "1.5.2"
+      working-directory:
+        description: Directory to run terraform validate in
+        type: string
+        default: "terraform"
+
+
+jobs:
+  terraform-validate:
+    runs-on: ubuntu-latest
+    environment: all-automation
+    steps:
+
+      # Checkout the code
+      - name: "Checkout Source Code"
+        uses: actions/checkout@v5
+      
+      # Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+          
+      # Install Linter
+      - name: "Install Terraform Linter"
+        uses: terraform-linters/setup-tflint@v5
+        with:
+          tflint_version: v0.52.0
+          tflint_wrapper: true
+
+      # Init Lint
+      - name: Terraform Lint Init
+        run: |
+          tflint --init
+
+      # Validate Terraform with TFLint 
+      - name: Terraform Lint
+        run: |
+          tflint --recursive > tflint_output.txt 2>&1 || echo "TFLINT_FAILED=true" >> $GITHUB_ENV
+          cat tflint_output.txt
+
+      # Format Comment 
+      - name: Format TfLint Output
+        if: env.TFLINT_FAILED == 'true'
+        id: format-tflint
+        run: |
+          COMMENT="## :x: TFLint found issues in the Terraform code\n\n\
+          COMMENT+="\`\`\`plaintext\n$(cat tflint_output.txt)\n\`\`\`\n\n"
+
+          echo "comment<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # Post Output to summary
+      - name: Post TFLint Output to Summary
+        if: env.TFLINT_FAILED == 'true'
+        run: echo `${{ steps.format-tflint.outputs.comment }}`>> $GITHUB_STEP_SUMMARY
+      
+      # Post comment to Pull Request
+      - name: Post TFLint Comment to Pull Request
+        if: env.TFLINT_FAILED == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        env:
+          body_content: ${{ steps.format-tflint.outputs.comment }}
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.body_content
+            })
+
+        # Fail workflow if TFLint failed
+      - name: Fail if TFLint found issues
+        if: env.TFLINT_FAILED == 'true'
+        run: exit 1
