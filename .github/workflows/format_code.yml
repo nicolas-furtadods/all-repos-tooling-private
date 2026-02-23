@@ -45,11 +45,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r ./tooling/scripts/requirements.txt
+          pip install black autopep8 isort
             
       - name: Terraform Format Recursive
         run: | 
           terraform fmt -recursive .
     
+      - name: Python Format
+        run: |
+          black .
+          autopep8 --recursive --in-place --aggressive .
+          isort .
+
       - name: Set git user
         if: inputs.push-code
         run: |
@@ -60,7 +67,7 @@ jobs:
         if: inputs.push-code
         run: |
           git add --all -- ':!tooling/'
-          git commit -m "Terraform Code Format"
+          git commit -m "Terraform and Python Code Format"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true # Necessary if case the code is good and nothing has changed
