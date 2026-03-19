@@ -39,10 +39,6 @@ on:
         description: Terraform working directory
         type: string
         default: "."
-      return-tf-plan-output:
-        description: Whether to return the output of terraform plan/apply/destroy commands in the workflow output. Be cautious when enabling this as it may contain sensitive information.
-        type: boolean
-        default: false
       pull_secrets:
         description: Whether to pull secrets files from Azure Storage Account. The storage account and path are fixed.
         type: boolean
@@ -63,10 +59,7 @@ on:
       ARM_CLIENT_SECRET:
         description: Azure Service Principal Client Secret.
         required: true
-    outputs:
-      terraform_output:
-        description: Output from terraform plan/apply/destroy commands, returned as JSON string. Will be empty if return-tf-plan-output input is set to false.
-        value: ${{ jobs.apply.outputs.terraform_output }}
+
 jobs:
   validate:
     name: Terraform Validate
@@ -79,7 +72,7 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Azure Terraform Init"
-        uses: ./.github/actions/azure-terraform-init
+        uses: nicolas-furtadods/all-repos-tooling-private/.github/actions/azure-terraform-init@cwe-lab
         with:
           terraform-working-directory: ${{ inputs.terraform-working-directory }}
           terraform-version: ${{ inputs.terraform-version }}
@@ -88,7 +81,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-
+          
       - name: Terraform Validate
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
@@ -115,20 +108,16 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
-      ## DO NOT FORGET FOR NEXT TIME 
-      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
-      - name: "Checkout Source Code"
-        uses: actions/checkout@v5
-
-      - name: "Install Terraform"
-        uses:  hashicorp/setup-terraform@v3
+      - name: "Azure Terraform Init"
+        uses: nicolas-furtadods/all-repos-tooling-private/.github/actions/azure-terraform-init@cwe-lab
         with:
-          terraform_version: ${{ inputs.terraform-version }}
-
-      - name: Authenticate to Azure
-        uses: azure/login@v3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          terraform-working-directory: ${{ inputs.terraform-working-directory }}
+          terraform-version: ${{ inputs.terraform-version }}
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
 
       - name: Pull secrets from Azure Storage Account
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -136,21 +125,6 @@ jobs:
         run: |
           az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.product}}/secrets.tfvars --file secrets.tfvars --auth-mode login
 
-      - name: Terraform Init
-        working-directory: ${{ inputs.terraform-working-directory }}
-        run: |
-          {
-            echo "### Terraform Init"
-            echo "<details><summary>Terraform Init</summary>"
-            echo
-            echo \`\`\`
-            terraform init -backend-config=backend.conf --reconfigure
-            echo \`\`\`
-            echo "</details>"
-            echo
-          } >> $GITHUB_STEP_SUMMARY
-      ## DO NOT FORGET FOR NEXT TIME 
-      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
       - name: Terraform Plan
         if: inputs.terraform-plan == true
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -211,42 +185,17 @@ jobs:
     outputs:
       terraform_output: ${{ steps.return_terraform_output.outputs.terraform_output }}
     steps:
-            ## DO NOT FORGET FOR NEXT TIME 
-      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
-      - name: "Checkout Source Code"
-        uses: actions/checkout@v5
-
-      - name: "Install Terraform"
-        uses:  hashicorp/setup-terraform@v3
+      - name: "Azure Terraform Init"
+        uses: nicolas-furtadods/all-repos-tooling-private/.github/actions/azure-terraform-init@cwe-lab
         with:
-          terraform_version: ${{ inputs.terraform-version }}
-
-      - name: Authenticate to Azure
-        uses: azure/login@v3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          terraform-working-directory: ${{ inputs.terraform-working-directory }}
+          terraform-version: ${{ inputs.terraform-version }}
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
      
-      - name: Pull secrets from Azure Storage Account
-        working-directory: ${{ inputs.terraform-working-directory }}
-        if: inputs.pull_secrets == true
-        run: |
-          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.product}}/secrets.tfvars --file secrets.tfvars --auth-mode login
-
-      - name: Terraform Init
-        working-directory: ${{ inputs.terraform-working-directory }}
-        run: |
-          {
-            echo "### Terraform Init"
-            echo "<details><summary>Terraform Init</summary>"
-            echo
-            echo \`\`\`
-            terraform init -backend-config=backend.conf --reconfigure
-            echo \`\`\`
-            echo "</details>"
-            echo
-          } >> $GITHUB_STEP_SUMMARY
-      ## DO NOT FORGET FOR NEXT TIME 
-      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
       - name: Download tfplan artifact
         uses: actions/download-artifact@v4
         with:
@@ -266,12 +215,3 @@ jobs:
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-
-      - name: Return Terraform Apply output
-        id: return_terraform_output
-        working-directory: ${{ inputs.terraform-working-directory }}
-        if: inputs.return-tf-plan-output == true
-        run: |
-          echo "terraform_output<<EOF" >> $GITHUB_OUTPUT
-          terraform output -json
-          echo "EOF" >> $GITHUB_OUTPUT
