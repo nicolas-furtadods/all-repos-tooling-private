@@ -48,6 +48,7 @@ on:
         type: boolean
         default: false
     secrets:
+
       AZURE_CREDENTIALS:
         description: Azure Service Principal credentials as in accepted by azure/login action
         required: true
@@ -63,7 +64,10 @@ on:
       ARM_CLIENT_SECRET:
         description: Azure Service Principal Client Secret.
         required: true
-
+    outputs:
+      terraform_output:
+        description: Output from terraform plan/apply/destroy commands, returned as JSON string. Will be empty if return-tf-plan-output input is set to false.
+        value: ${{ jobs.apply.outputs.terraform_output }}
 jobs:
   validate:
     name: Terraform Validate
@@ -275,6 +279,8 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
       - name: Return Terraform Apply output
+        id: return_terraform_output
+        working-directory: ${{ inputs.terraform-working-directory }}
         if: inputs.return-tf-plan-output == true
         run: |
           echo "terraform_output<<EOF" >> $GITHUB_OUTPUT
