@@ -7,6 +7,10 @@ env:
 on:
   workflow_call:
     inputs:
+      product:
+        description: Product to target, used for informational purposes in this workflow
+        type: string
+        required: true
       environment:
         description: Environment to target
         type: string
@@ -141,7 +145,7 @@ jobs:
         working-directory: ${{ inputs.terraform-working-directory }}
         if: inputs.pull_secrets == true
         run: |
-          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
+          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.product}}/secrets.tfvars --file secrets.tfvars --auth-mode login
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -224,7 +228,7 @@ jobs:
         working-directory: ${{ inputs.terraform-working-directory }}
         if: inputs.pull_secrets == true
         run: |
-          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
+          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.product}}/secrets.tfvars --file secrets.tfvars --auth-mode login
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
