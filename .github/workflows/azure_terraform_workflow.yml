@@ -159,6 +159,8 @@ jobs:
     needs: plan-destroy
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    outputs:
+      terraform_output: ${{ steps.terraform_apply.outputs.terraform_output }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -209,6 +211,7 @@ jobs:
 
       - name: Return Terraform Apply output
         if: inputs.return-tf-plan-output == true
+        id: terraform_apply
         run: |
           echo "terraform_output<<EOF" >> $GITHUB_OUTPUT
           terraform output -json
