@@ -1,0 +1,54 @@
+name: "Azure Terraform Init"
+description: "Initialize Terraform for Azure environment. Install Terraform, authenticate to Azure, and run terraform init in the specified working directory."
+inputs:
+  terraform-working-directory:
+    description: "The working directory where terraform init should be executed."
+    required: true
+  terraform-version:
+    description: "The version of Terraform to install and use."
+    required: true
+  AZURE_CREDENTIALS:
+    description: "Azure credentials in JSON format for authentication. Required if terraform init needs to authenticate to Azure."
+    required: true
+  ARM_CLIENT_ID:
+    description: Azure Service Principal Client ID.
+    required: true
+  ARM_TENANT_ID:
+    description: Azure Service Principal Tenant ID.
+    required: true
+  ARM_SUBSCRIPTION_ID:
+    description: Azure Service Principal Subscription ID.
+    required: true
+  ARM_CLIENT_SECRET:
+    description: Azure Service Principal Client Secret.
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: "Checkout repository"
+      uses: actions/checkout@v5
+
+    - name: "Install Terraform"
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+
+    - name: "Authenticate to Azure"
+      uses: azure/login@v3
+      with:
+        creds: ${{ inputs.AZURE_CREDENTIALS }}
+
+    - name: Terraform Init
+      working-directory: ${{ inputs.terraform-working-directory }}
+      shell: bash
+      run: |
+        {
+          echo "### Terraform Init"
+          echo "<details><summary>Terraform Init</summary>"
+          echo
+          echo \`\`\`
+          terraform init -backend-config=backend.conf --reconfigure
+          echo \`\`\`
+          echo "</details>"
+          echo
+        } >> $GITHUB_STEP_SUMMARY

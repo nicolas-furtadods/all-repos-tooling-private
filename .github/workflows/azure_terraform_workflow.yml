@@ -48,7 +48,6 @@ on:
         type: boolean
         default: false
     secrets:
-
       AZURE_CREDENTIALS:
         description: Azure Service Principal credentials as in accepted by azure/login action
         required: true
@@ -79,33 +78,17 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
-      - name: "Checkout Source Code"
-        uses: actions/checkout@v5
-
-      - name: "Install Terraform"
-        uses:  hashicorp/setup-terraform@v3
+      - name: "Azure Terraform Init"
+        uses: nicolas-furtadods/all-repos-tooling-private/.github/actions/azure-terraform-init@cwe-lab
         with:
-          terraform_version: ${{ inputs.terraform-version }}
-
-      - name: Authenticate to Azure
-        uses: azure/login@v3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Terraform Init
-        working-directory: ${{ inputs.terraform-working-directory }}
-        run: |
-          {
-            echo "### Terraform Init"
-            echo "<details><summary>Terraform Init</summary>"
-            echo
-            echo \`\`\`
-            terraform init -backend-config=backend.conf --reconfigure
-            echo \`\`\`
-            echo "</details>"
-            echo
-          } >> $GITHUB_STEP_SUMMARY
-
+          terraform-working-directory: ${{ inputs.terraform-working-directory }}
+          terraform-version: ${{ inputs.terraform-version }}
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          
       - name: Terraform Validate
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
@@ -132,6 +115,8 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
+      ## DO NOT FORGET FOR NEXT TIME 
+      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
 
@@ -164,7 +149,8 @@ jobs:
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-
+      ## DO NOT FORGET FOR NEXT TIME 
+      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
       - name: Terraform Plan
         if: inputs.terraform-plan == true
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -225,6 +211,8 @@ jobs:
     outputs:
       terraform_output: ${{ steps.return_terraform_output.outputs.terraform_output }}
     steps:
+            ## DO NOT FORGET FOR NEXT TIME 
+      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
 
@@ -257,7 +245,8 @@ jobs:
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
-
+      ## DO NOT FORGET FOR NEXT TIME 
+      ## USE COMPOSITE WORKFLOW STEP TO AVOID DUPLICATING CODE BETWEEN WORKFLOWS
       - name: Download tfplan artifact
         uses: actions/download-artifact@v4
         with:
