@@ -44,14 +44,24 @@ on:
         type: boolean
         default: false
     secrets:
-      AZURE_CREDENTIALS:
-        description: Azure Service Principal credentials as in accepted by azure/login action
-        required: true
+      AZURE_CLIENT_ID:
+        description: Azure Client ID for authentication
+      AZURE_TENANT_ID:
+        description: Azure Tenant ID for authentication
+      AZURE_SUBSCRIPTION_ID:
+        description: Azure Subscription ID for authentication
+      AZURE_CLIENT_SECRET:
+        description: Azure Client Secret for authentication
 jobs:
   validate:
     name: Terraform Validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -61,11 +71,6 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform-version }}
 
-      - name: Authenticate to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
@@ -104,6 +109,11 @@ jobs:
     needs: validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -112,11 +122,6 @@ jobs:
         uses:  hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
-
-      - name: Authenticate to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -188,6 +193,11 @@ jobs:
     needs: plan-destroy
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -196,11 +206,6 @@ jobs:
         uses:  hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
-
-      - name: Authenticate to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
