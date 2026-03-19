@@ -35,6 +35,10 @@ on:
         description: Whether to return the output of terraform plan/apply/destroy commands in the workflow output. Be cautious when enabling this as it may contain sensitive information.
         type: boolean
         default: false
+      pull_secrets:
+        description: Whether to pull secrets files from Azure Storage Account. The storage account and path are fixed.
+        type: boolean
+        default: false
     secrets:
       AZURE_CREDENTIALS:
         description: Azure Service Principal credentials as in accepted by azure/login action
@@ -52,6 +56,11 @@ jobs:
         uses:  hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Authenticate to Azure
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -97,9 +106,20 @@ jobs:
           terraform_version: ${{ inputs.terraform-version }}
 
       - name: Authenticate to Azure
-        uses: azure/login@v1
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Pull Backend config from Azure Storage Account
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/backend.conf --file backend.conf --auth-mode login
+
+      - name: Pull secrets from Azure Storage Account
+        working-directory: ${{ inputs.terraform-working-directory }}
+        if: inputs.pull_secrets == true
+        run: |
+          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -109,7 +129,7 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init
+            terraform init -backend-config=backend.conf --reconfigure
             echo \`\`\`
             echo "</details>"
             echo
@@ -169,10 +189,21 @@ jobs:
           terraform_version: ${{ inputs.terraform-version }}
 
       - name: Authenticate to Azure
-        uses: azure/login@v1
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Pull Backend config from Azure Storage Account
+        working-directory: ${{ inputs.terraform-working-directory }}
+        run: |
+          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/backend.conf --file backend.conf --auth-mode login
+          
+      - name: Pull secrets from Azure Storage Account
+        working-directory: ${{ inputs.terraform-working-directory }}
+        if: inputs.pull_secrets == true
+        run: |
+          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
+          
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
