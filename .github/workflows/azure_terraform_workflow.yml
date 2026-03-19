@@ -47,11 +47,29 @@ on:
       AZURE_CREDENTIALS:
         description: Azure Service Principal credentials as in accepted by azure/login action
         required: true
+      ARM_CLIENT_ID:
+        description: Azure Service Principal Client ID.
+        required: true
+      ARM_TENANT_ID:
+        description: Azure Service Principal Tenant ID.
+        required: true
+      ARM_SUBSCRIPTION_ID:
+        description: Azure Service Principal Subscription ID.
+        required: true
+      ARM_CLIENT_SECRET:
+        description: Azure Service Principal Client Secret.
+        required: true
+
 jobs:
   validate:
     name: Terraform Validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -100,6 +118,11 @@ jobs:
     needs: validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -178,6 +201,11 @@ jobs:
     needs: plan-destroy
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
