@@ -170,7 +170,11 @@ jobs:
             echo "<details><summary>Terraform Plan</summary>"
             echo
             echo \`\`\`
-            terraform plan -out tfplan
+            if [ -f "secrets.tfvars" ]; then
+              terraform plan -var-file=secrets.tfvars -out tfplan
+            else
+              terraform plan -out tfplan
+            fi
             echo \`\`\`
             echo "</details>"
             echo
@@ -185,7 +189,11 @@ jobs:
             echo "<details><summary>Terraform Destroy</summary>"
             echo
             echo \`\`\`
-            terraform destroy -out tfplan
+            if [ -f "secrets.tfvars" ]; then
+              terraform destroy -var-file=secrets.tfvars -out tfplan
+            else
+              terraform destroy -out tfplan
+            fi
             echo \`\`\`
             echo "</details>"
             echo
