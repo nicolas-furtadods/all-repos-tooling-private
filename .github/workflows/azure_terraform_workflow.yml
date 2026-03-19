@@ -210,6 +210,6 @@ jobs:
       - name: Return Terraform Apply output
         if: inputs.return-tf-plan-output == true
         run: |
-          echo "t<<EOF" >> $GITHUB_OUTPUT
+          echo "terraform_output<<EOF" >> $GITHUB_OUTPUT
           terraform output -json
           echo "EOF" >> $GITHUB_OUTPUT
