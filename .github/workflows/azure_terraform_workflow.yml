@@ -61,6 +61,11 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform-version }}
 
+      - name: Authenticate to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
