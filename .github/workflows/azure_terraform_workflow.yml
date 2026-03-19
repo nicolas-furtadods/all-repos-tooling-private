@@ -31,42 +31,19 @@ on:
         description: Terraform working directory
         type: string
         default: "."
-      terraform-backend-config-path:
-        description: Optional terraform backend config
-        type: string
-        default: null
-      terraform-vars:
-        description: Optional terraform variables to pass in the format -var='key=value' -var='key2=value2'
-        type: string
-        default: null
       return-tf-plan-output:
         description: Whether to return the output of terraform plan/apply/destroy commands in the workflow output. Be cautious when enabling this as it may contain sensitive information.
         type: boolean
         default: false
     secrets:
-      ARM_CLIENT_ID:
-        description: Azure Client ID for authentication
+      AZURE_CREDENTIALS:
+        description: Azure Service Principal credentials as in accepted by azure/login action
         required: true
-      ARM_TENANT_ID:
-        description: Azure Tenant ID for authentication
-        required: true
-      ARM_SUBSCRIPTION_ID:
-        description: Azure Subscription ID for authentication
-        required: true
-      ARM_CLIENT_SECRET:
-        description: Azure Client Secret for authentication
-        required: true
-
 jobs:
   validate:
     name: Terraform Validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
-    env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -84,11 +61,7 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            if [ -n "${{ inputs.terraform-backend-config-path }}" ]; then
-              terraform init -backend-config=${{ inputs.terraform-backend-config-path }}
-            else
-              terraform init
-            fi
+            terraform init
             echo \`\`\`
             echo "</details>"
             echo
@@ -114,11 +87,6 @@ jobs:
     needs: validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
-    env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -128,6 +96,11 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform-version }}
 
+      - name: Authenticate to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
@@ -136,11 +109,7 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            if [ -n "${{ inputs.terraform-backend-config-path }}" ]; then
-              terraform init -backend-config=${{ inputs.terraform-backend-config-path }}
-            else
-              terraform init
-            fi
+            terraform init
             echo \`\`\`
             echo "</details>"
             echo
@@ -155,11 +124,7 @@ jobs:
             echo "<details><summary>Terraform Plan</summary>"
             echo
             echo \`\`\`
-            if [ -n "${{ inputs.terraform-vars }}" ]; then
-              eval "terraform plan ${{ inputs.terraform-vars }} -out tfplan"
-            else
-              terraform plan -out tfplan
-            fi
+            terraform plan -out tfplan
             echo \`\`\`
             echo "</details>"
             echo
@@ -174,11 +139,7 @@ jobs:
             echo "<details><summary>Terraform Destroy</summary>"
             echo
             echo \`\`\`
-            if [ -n "${{ inputs.terraform-vars }}" ]; then
-              eval "terraform plan -destroy ${{ inputs.terraform-vars }} -out tfplan"
-            else
-              terraform plan -destroy -out tfplan
-            fi
+            terraform destroy -out tfplan
             echo \`\`\`
             echo "</details>"
             echo
@@ -198,11 +159,6 @@ jobs:
     needs: plan-destroy
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
-    env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
@@ -212,6 +168,11 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform-version }}
 
+      - name: Authenticate to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
@@ -220,11 +181,7 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            if [ -n "${{ inputs.terraform-backend-config-path }}" ]; then
-              terraform init -backend-config=${{ inputs.terraform-backend-config-path }}
-            else
-              terraform init
-            fi
+            terraform init
             echo \`\`\`
             echo "</details>"
             echo
