@@ -31,6 +31,14 @@ on:
         description: Terraform working directory
         type: string
         default: "."
+      terraform-backend-config-path:
+        description: Optional terraform backend config
+        type: string
+        default: null
+      terraform-vars:
+        description: Optional terraform variables to pass in the format -var='key=value' -var='key2=value2'
+        type: string
+        default: null
       return-tf-plan-output:
         description: Whether to return the output of terraform plan/apply/destroy commands in the workflow output. Be cautious when enabling this as it may contain sensitive information.
         type: boolean
@@ -61,7 +69,11 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init
+            if [ -n "${{ inputs.terraform-backend-config-path }}" ]; then
+              terraform init -backend-config=${{ inputs.terraform-backend-config-path }}
+            else
+              terraform init
+            fi
             echo \`\`\`
             echo "</details>"
             echo
@@ -109,7 +121,11 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init
+            if [ -n "${{ inputs.terraform-backend-config-path }}" ]; then
+              terraform init -backend-config=${{ inputs.terraform-backend-config-path }}
+            else
+              terraform init
+            fi
             echo \`\`\`
             echo "</details>"
             echo
@@ -124,7 +140,11 @@ jobs:
             echo "<details><summary>Terraform Plan</summary>"
             echo
             echo \`\`\`
-            terraform plan -out tfplan
+            if [ -n "${{ inputs.terraform-vars }}" ]; then
+              eval "terraform plan ${{ inputs.terraform-vars }} -out tfplan"
+            else
+              terraform plan -out tfplan
+            fi
             echo \`\`\`
             echo "</details>"
             echo
@@ -139,7 +159,11 @@ jobs:
             echo "<details><summary>Terraform Destroy</summary>"
             echo
             echo \`\`\`
-            terraform destroy -out tfplan
+            if [ -n "${{ inputs.terraform-vars }}" ]; then
+              eval "terraform plan -destroy ${{ inputs.terraform-vars }} -out tfplan"
+            else
+              terraform plan -destroy -out tfplan
+            fi
             echo \`\`\`
             echo "</details>"
             echo
@@ -181,7 +205,11 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init
+            if [ -n "${{ inputs.terraform-backend-config-path }}" ]; then
+              terraform init -backend-config=${{ inputs.terraform-backend-config-path }}
+            else
+              terraform init
+            fi
             echo \`\`\`
             echo "</details>"
             echo
