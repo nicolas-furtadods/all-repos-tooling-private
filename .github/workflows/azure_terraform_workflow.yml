@@ -31,6 +31,10 @@ on:
         description: Terraform working directory
         type: string
         default: "."
+      return-tf-plan-output:
+        description: Whether to return the output of terraform plan/apply/destroy commands in the workflow output. Be cautious when enabling this as it may contain sensitive information.
+        type: boolean
+        default: false
     secrets:
       AZURE_CREDENTIALS:
         description: Azure Service Principal credentials as in accepted by azure/login action
@@ -202,3 +206,10 @@ jobs:
             echo "</details>"
             echo
           } >> $GITHUB_STEP_SUMMARY
+
+      - name: Return Terraform Apply output
+        if: inputs.return-tf-plan-output == true
+        run: |
+          echo "t<<EOF" >> $GITHUB_OUTPUT
+          terraform output -json
+          echo "EOF" >> $GITHUB_OUTPUT
