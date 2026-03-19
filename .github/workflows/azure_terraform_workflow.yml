@@ -11,6 +11,10 @@ on:
         description: Environment to target
         type: string
         required: true
+      storage_account_name:
+        description: Azure Storage Account name to pull secrets from, if pull_secrets is set to true. The storage account must have a container named 'terraform-secrets' with secrets stored in the format <working-directory>/secrets.tfvars
+        type: string
+        required: true
       terraform-version:
         description: Terraform version to install
         type: string
@@ -110,16 +114,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Pull Backend config from Azure Storage Account
-        working-directory: ${{ inputs.terraform-working-directory }}
-        run: |
-          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/backend.conf --file backend.conf --auth-mode login
-
       - name: Pull secrets from Azure Storage Account
         working-directory: ${{ inputs.terraform-working-directory }}
         if: inputs.pull_secrets == true
         run: |
-          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
+          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
 
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
@@ -192,18 +191,13 @@ jobs:
         uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Pull Backend config from Azure Storage Account
-        working-directory: ${{ inputs.terraform-working-directory }}
-        run: |
-          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/backend.conf --file backend.conf --auth-mode login
-          
+     
       - name: Pull secrets from Azure Storage Account
         working-directory: ${{ inputs.terraform-working-directory }}
         if: inputs.pull_secrets == true
         run: |
-          az storage blob download --account-name furtadoallrepos --container-name ${{ inputs.storage_account_name }} --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
-          
+          az storage blob download --account-name ${{ inputs.storage_account_name }} --container-name terraform-secrets --name ${{ inputs.terraform-working-directory}}/secrets.tfvars --file secrets.tfvars --auth-mode login
+
       - name: Terraform Init
         working-directory: ${{ inputs.terraform-working-directory }}
         run: |
@@ -212,7 +206,7 @@ jobs:
             echo "<details><summary>Terraform Init</summary>"
             echo
             echo \`\`\`
-            terraform init
+            terraform init -backend-config=backend.conf --reconfigure
             echo \`\`\`
             echo "</details>"
             echo
