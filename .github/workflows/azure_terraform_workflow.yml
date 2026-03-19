@@ -79,7 +79,7 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
       - name: "Azure Terraform Init"
-        uses: ./.github/actions/azure-terraform-init
+        uses: .github/actions/azure-terraform-init
         with:
           terraform-working-directory: ${{ inputs.terraform-working-directory }}
           terraform-version: ${{ inputs.terraform-version }}
