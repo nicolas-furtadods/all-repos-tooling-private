@@ -46,22 +46,27 @@ on:
     secrets:
       AZURE_CLIENT_ID:
         description: Azure Client ID for authentication
+        required: true
       AZURE_TENANT_ID:
         description: Azure Tenant ID for authentication
+        required: true
       AZURE_SUBSCRIPTION_ID:
         description: Azure Subscription ID for authentication
+        required: true
       AZURE_CLIENT_SECRET:
         description: Azure Client Secret for authentication
+        required: true
+
 jobs:
   validate:
     name: Terraform Validate
     runs-on: [ubuntu-latest]
     environment: ${{ inputs.environment }}
     env:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v5
