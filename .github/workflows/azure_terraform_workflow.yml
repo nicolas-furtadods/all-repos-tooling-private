@@ -71,8 +71,15 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
     steps:
+      - name: Checkout Tooling repository
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.repository_owner}}/all-repos-tooling-private
+          ref: ${{ github.ref }}
+          path: 'all-repos-tooling-private'
+
       - name: "Azure Terraform Init"
-        uses: nicolas-furtadods/all-repos-tooling-private/.github/actions/azure-terraform-init@cwe-lab
+        uses: ./all-repos-tooling-private/.github/actions/azure-terraform-init
         with:
           terraform-working-directory: ${{ inputs.terraform-working-directory }}
           terraform-version: ${{ inputs.terraform-version }}
