@@ -186,7 +186,7 @@ jobs:
       terraform_output: ${{ steps.return_terraform_output.outputs.terraform_output }}
     steps:
       - name: "Azure Terraform Init"
-        uses: ./.github/actions/azure-terraform-init@cwe-lab
+        uses: nicolas-furtadods/all-repos-tooling-private/.github/actions/azure-terraform-init@cwe-lab
         with:
           terraform-working-directory: ${{ inputs.terraform-working-directory }}
           terraform-version: ${{ inputs.terraform-version }}

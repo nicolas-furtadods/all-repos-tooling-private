@@ -47,7 +47,7 @@ runs:
           echo "<details><summary>Terraform Init</summary>"
           echo
           echo \`\`\`
-          terraform init -backend-config=backend.conf --reconfigure
+          terraform init -backend-config="backend.conf" --reconfigure
           echo \`\`\`
           echo "</details>"
           echo

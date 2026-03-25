@@ -27,7 +27,7 @@ jobs:
       - name: "Checkout All Repos Tooling Private"
         uses: actions/checkout@v5
         with:
-          repository: nicolas-furtadods/all-repos-tooling-private
+          repository: nicolas-furtadods-org/all-repos-tooling-private
           token: ${{ secrets.GITHUB_TOKEN }}
           path: tooling/
 
