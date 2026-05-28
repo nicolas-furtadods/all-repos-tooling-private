@@ -82,19 +82,50 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           
-      - name: Terraform Validate
+      - name: Terraform validate
+        id: terraform-validate
         working-directory: ${{ inputs.terraform-working-directory }}
+        continue-on-error: true
         run: |
+          terraform validate 2>&1 | tee /tmp/terraform-validate.log
+          exit ${PIPESTATUS[0]}
+
+      # ----- POST PR Comment on failure -----
+      - name: Format PR Content
+        id: format-pr-content
+        if: steps.terraform-validate.outcome == 'failure' && github.event_name == 'pull_request'
+        run: |
+          VALIDATE_OUTPUT=$(cat /tmp/terraform-validate.log)
           {
-            echo "### Terraform Validate"
-            echo "<details><summary>Terraform Validate</summary>"
-            echo
-            echo \`\`\`
-            terraform validate
-            echo \`\`\`
+            echo "## :x: Terraform Validate Failed"
+            echo ""
+            echo "<details><summary>Show Details</summary>"
+            echo ""
+            echo '```hcl'
+            echo "$VALIDATE_OUTPUT"
+            echo '```'
+            echo ""
             echo "</details>"
-            echo
           } >> $GITHUB_STEP_SUMMARY
+          PR_BODY=$(printf '## :x: Terraform Validate Failed\n\n<details><summary>Show Details</summary>\n\n```hcl\n%s\n```\n\n</details>' "$VALIDATE_OUTPUT")
+          echo "pr_body<<__EOF__" >> $GITHUB_OUTPUT
+          echo "$PR_BODY" >> $GITHUB_OUTPUT
+          echo "__EOF__" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: steps.terraform-validate.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PR_BODY: ${{ steps.format-pr-content.outputs.pr_body }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.PR_BODY
+            });
            
   plan-destroy:
     name: Terraform Plan or Destroy
